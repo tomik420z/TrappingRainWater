@@ -1,0 +1,9 @@
+debug
+release
+ui_*
+moc_*
+*.stash
+*.Debug
+*.release
+MakeFile*
+*.pro.user
