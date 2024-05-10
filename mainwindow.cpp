@@ -59,7 +59,7 @@ void MainWindow::calcSlot()
 
     std::vector<RainUtils::trapeze_t> trapezes = tree.get_water_filled();
 
-    m_terrainItem->setWaterFilled(std::move(trapezes));
+    m_terrainItem->setWaterFilled(std::move(trapezes), tree.get_global_extremum(), height);
 
     ui->lMaxValue->setText(QString::number(tree.get_max_height(), 'f', 4));
 

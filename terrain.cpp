@@ -69,6 +69,18 @@ void Terrain::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
                 << QPointF(trapeze.up_left_p.x, transform_coord_y(trapeze.up_left_p.y));
         painter->drawPolygon(polygon);
     }
+
+
+    if (extremum.is_setup) {
+
+        pen.setWidth(1);
+        painter->setPen(QColor(255, 0, 0));
+        painter->setBrush(QBrush(QColor(255, 0, 0), Qt::SolidPattern));
+        auto point = extremum.extremum_point;
+        qDebug() << point.x << point.y << point.x <<  point.y + extremum.height;
+        painter->drawLine(point.x, transform_coord_y(point.y),
+                          point.x, transform_coord_y(point.y + 10'000));
+    }
 }
 
 QRectF Terrain::boundingRect() const
@@ -86,7 +98,7 @@ QRectF Terrain::boundingRect() const
                                      };
 
     static constexpr int margin_width = 100;
-    static constexpr int margin_height = 50;
+    static constexpr int margin_height = 100;
 
     double min_value_x = m_mapHeights->front().x;
     double max_value_x = m_mapHeights->back().x;
@@ -94,22 +106,28 @@ QRectF Terrain::boundingRect() const
     double max_value_y = std::max_element(m_mapHeights->begin(), m_mapHeights->end(), order_by_y)->y;
 
 
-    double _width = max_value_x - min_value_x;
-    double _height = max_value_y - min_value_y;
+    double _width = std::abs(max_value_x - min_value_x);
+    double _height = std::abs(max_value_y - min_value_y);
 
-    return QRectF(min_value_x - margin_width, min_value_y - margin_height, _width + 2 * margin_width, _height + 2 * margin_height);
+    return QRectF(min_value_x - margin_width, min_value_y, _width + 2 * margin_width, _height + 2 * margin_height);
 }
 
 void Terrain::setMapHeights(RainUtils::vec_ptr_points_t _mapHeights)
 {
     m_waterFilled.clear();
     m_mapHeights = _mapHeights;
+    extremum.is_setup = false;
     update();
 }
 
-void Terrain::setWaterFilled(std::vector<RainUtils::trapeze_t> &&waterFilled)
+void Terrain::setWaterFilled(std::vector<RainUtils::trapeze_t> &&waterFilled, RainUtils::point_t _extremum, double height)
 {
     m_waterFilled = std::move(waterFilled);
+
+    extremum.extremum_point = _extremum;
+    extremum.height = height;
+    extremum.is_setup = true;
+
     update();
 }
 

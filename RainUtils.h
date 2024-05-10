@@ -247,6 +247,8 @@ struct figure_t {
 
     double get_square(double height) const;
 
+    point_t get_bottom_y() const;
+
 };
 
 struct water_t {
@@ -315,23 +317,24 @@ public:
 
     void distribution(double x_left, double x_right, double square);
 
-    void calc_height(node* curr, double height);
+    void calc_height(node* curr, double height, point_t extr);
 
     inline void exec(const std::list<water_t>& waters) {
         for(const water_t& water : waters) {
             distribution(water.x_left, water.x_right, water.square);
         }
-        calc_height(root, m_properties[root].height);
+        calc_height(root, m_properties[root].height, point_t{0., 0.});
     }
 
     inline double get_max_height() const {
         return max_height;
     }
 
-
     void get_triangles_procedure(std::vector<trapeze_t>& _tapezes, node* curr);
 
     std::vector<trapeze_t> get_water_filled();
+
+    point_t get_global_extremum() const;
 
 private:
     //! корень дерева
@@ -341,7 +344,9 @@ private:
     double x_right;
     //! ответ
     double max_height;
-
+    //! глобальный экстремум
+    point_t global_extremum;
+    //! свойства узлов
     std::unordered_map<node*, property_t> m_properties;
 };
 
@@ -352,7 +357,6 @@ void tree_figures::recursive_init(const std::vector<point_t> &_points, node *par
         return;
     }
 
-    // std::cout << parent->figure << std::endl;
 
     static auto compare_coord = [](const point_t& _lhs, const point_t& _rhs){
         return _lhs.y < _rhs.y;

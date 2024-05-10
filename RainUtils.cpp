@@ -1,6 +1,7 @@
 #include "RainUtils.h"
 
-#include "QDebug"
+#include <QDebug>
+
 std::pair<double, double> RainUtils::figure_t::get_width() const {
     if (type == TRIANGLE) {
         return std::make_pair(std::any_cast<triangle_t>(figure).get_left_x(),
@@ -42,6 +43,15 @@ double RainUtils::figure_t::get_square(double height) const {
     } else {
         return 0;
     }
+}
+
+RainUtils::point_t RainUtils::figure_t::get_bottom_y() const
+{
+    if (type == TRAPEZE) {
+       return std::any_cast<trapeze_t>(figure).down_left_p;
+    }
+
+    return point_t{0., 0.};
 }
 
 RainUtils::tree_figures::tree_figures(const std::vector<point_t> &_points) : max_height(0.) {
@@ -141,12 +151,15 @@ RainUtils::tree_figures::node *RainUtils::tree_figures::right_flow(node *curr) {
     while (curr->left_son != nullptr || curr->right_son != nullptr) {
         // если имеется оба сына
         if (curr->left_son != nullptr && curr->right_son != nullptr) {
+            //  если левый сын не заполнен
             if (!m_properties[curr->left_son].is_filled) {
                 curr = curr->left_son;
             }
+            // если правый сын незаполнен
             else if (!m_properties[curr->right_son].is_filled) {
                 curr = curr->right_son;
             }
+            // если и тот и другой заполнен
             else {
                 return curr;
             }
@@ -327,17 +340,20 @@ void RainUtils::tree_figures::distribution(double x_left, double x_right, double
     }
 }
 
-void RainUtils::tree_figures::calc_height(node *curr, double height) {
+void RainUtils::tree_figures::calc_height(node *curr, double height, point_t _extr) {
     if (curr->left_son == nullptr && curr->right_son == nullptr) {
-        max_height = std::max(max_height, height);
+        if (max_height < height) {
+            max_height = height;
+            global_extremum = curr->figure.get_bottom_y();
+        }
     }
 
     if (curr->left_son != nullptr) {
-        calc_height(curr->left_son, height + m_properties[curr->left_son].height);
+        calc_height(curr->left_son, height + m_properties[curr->left_son].height, _extr);
     }
 
     if (curr->right_son != nullptr) {
-        calc_height(curr->right_son, height + m_properties[curr->right_son].height);
+        calc_height(curr->right_son, height + m_properties[curr->right_son].height, _extr);
     }
 }
 
@@ -410,3 +426,11 @@ std::vector<RainUtils::trapeze_t> RainUtils::tree_figures::get_water_filled() {
     get_triangles_procedure(triangles, root);
     return triangles;
 }
+
+
+RainUtils::point_t RainUtils::tree_figures::get_global_extremum() const
+{
+    return global_extremum;
+}
+
+

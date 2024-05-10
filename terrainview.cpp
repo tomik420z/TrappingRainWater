@@ -9,11 +9,14 @@ TerrainView::TerrainView(QWidget *parent) : QGraphicsView(parent), m_scene(new Q
 {
     _modifiers = Qt::ControlModifier;
     _zoom_factor_base = 1.0015;
+    setRenderHint(QPainter::Antialiasing);
+
     scaleFactor = 1;
     setParent(parent);
     setDragMode(QGraphicsView::NoDrag);
 
     setMouseTracking(true);
+
 
     setScene(m_scene);
 }
